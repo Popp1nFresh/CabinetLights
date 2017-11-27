@@ -5,6 +5,7 @@
 // - Changed PWM min/max
 //
 // Control brightness level of cabinets lights.
+// Peter T.
 //
 //***********************************************//
 
