@@ -37,7 +37,7 @@ unsigned long interruptCount = 0;
 static int Current_PWM_Level = PWM_OFF;
 unsigned long nowTime = 0;
 
-
+// https://playground.arduino.cc/Code/PwmFrequency
 void setPwmFrequency(int pin, int divisor) {
   byte mode;
   if(pin == 5 || pin == 6 || pin == 9 || pin == 10) {
@@ -125,25 +125,26 @@ void Delay(int pauseLength)
 // FADE
 //*******************//
 void Fade(int currentLevel, int nextLevel){
-  //if(currentLevel = nextLevel) return; 
-  
+
   // Fade to brighter level 
   if(currentLevel <= nextLevel)
   {
     while(currentLevel <= nextLevel)
     {
-      analogWrite(PWM_PIN, ++currentLevel);
-      Delay(5);
+      analogWrite(PWM_PIN, currentLevel++);
+      Delay(2);
     }
+    return;
   }
   // Fade to darker level
-  else if(currentLevel >= nextLevel)
+  if(currentLevel >= nextLevel)
   {
     while(currentLevel >= nextLevel)
     {
       analogWrite(PWM_PIN, currentLevel--); // using minus minus after Seems to stop bright flashes.
       Delay(4);
     }
+    return;
   }
 }
 
@@ -160,14 +161,14 @@ void ChangeLEDStatus()
       case LEVEL_OFF:
         Fade(Current_PWM_Level, PWM_OFF);
         Current_PWM_Level = PWM_OFF;
-        analogWrite(PWM_PIN, PWM_OFF); // Why is this needed and it does not seem to 'stick' in the while loops?
-        nextActivePin = LEVEL_LOW;
+        analogWrite(PWM_PIN, PWM_OFF); // Why is this needed and it does not seem to 'stick' in the while loops (above)?
+        nextActivePin = LEVEL_MIN;
         break;
       case LEVEL_MIN: // Special case min brightness
-        //Fade(Current_PWM_Level, PWM_MIN);
-        //Current_PWM_Level = PWM_MIN;
-        //nextActivePin = LEVEL_OFF;
-        break;  
+//        Fade(Current_PWM_Level, PWM_MIN);
+//        Current_PWM_Level = PWM_MIN;
+//        nextActivePin = LEVEL_LOW;
+//        break;  
       case LEVEL_LOW:
         Fade(Current_PWM_Level, PWM_LOW);
         Current_PWM_Level = PWM_LOW;
@@ -193,10 +194,7 @@ void ChangeLEDStatus()
 //*******************//
 bool keyPressed()
 {
-  if(digitalRead(BUTTON_INTERRUPT_PIN) == LOW)
-    return true;
-  else
-    return false;
+  return digitalRead(BUTTON_INTERRUPT_PIN) == LOW;
 }
 
 
@@ -207,11 +205,6 @@ bool DebounceSwitch()
 {
   static unsigned int state = 0;
   state = (state<<1) | !keyPressed() | 0xe000;
-  if(state == 0xf000)
-  {
-    return true;
-  }
-  else
-    return false;
+  return state == 0xf000;
 }
 
